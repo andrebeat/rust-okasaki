@@ -1,6 +1,4 @@
-use std::cmp::max;
 use std::fmt::{Display, Error, Formatter};
-use std::num::Int;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, Eq, PartialEq)]

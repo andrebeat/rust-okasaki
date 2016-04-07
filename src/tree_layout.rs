@@ -1,5 +1,4 @@
 use std::fmt::{Debug, Display};
-use std::num::Float;
 use std::rc::Rc;
 
 use tree::Tree;
@@ -11,7 +10,7 @@ use tree::Tree::{Node, Tip};
 
 pub fn pretty_print<T: Clone + Display + Debug>(t: &Tree<(T, f64)>) {
     fn print_spaces(n: usize) {
-        for _ in (0..n) {
+        for _ in 0..n {
             print!(" ");
         }
     }
@@ -42,7 +41,7 @@ pub fn pretty_print<T: Clone + Display + Debug>(t: &Tree<(T, f64)>) {
                         sp
                     }
                     };
-                aux(current.tail().to_vec(), next, o);
+                aux(current[1..].to_vec(), next, o);
             }
         }
     }
@@ -169,7 +168,7 @@ fn fit_list_left(es: Vec<Extent>) -> Vec<f64> {
         match es.first() {
             Some(e) => {
                 let x = fit(acc.clone(), e.clone());
-                let mut r = aux(es.tail().to_vec(), merge_extent(acc.clone(), move_extent(e.clone().to_vec(), x)));
+                let mut r = aux(es[1..].to_vec(), merge_extent(acc.clone(), move_extent(e.clone().to_vec(), x)));
                 r.insert(0, x);
                 r
             },
@@ -186,7 +185,7 @@ fn rmax(p: f64, q: f64) -> f64 {
 fn fit(e1: Extent, e2: Extent) -> f64 {
     match (e1.first(), e2.first()) {
         (Some(&(_, p)), Some(&(q, _))) =>
-            rmax(fit(e1.tail().to_vec(), e2.tail().to_vec()), p - q + 1.0),
+            rmax(fit(e1[1..].to_vec(), e2[1..].to_vec()), p - q + 1.0),
         (_, _) => 0.0
     }
 }
@@ -196,7 +195,7 @@ fn merge_extent(e1: Extent, e2: Extent) -> Extent {
         (None, _) => e2,
         (_, None) => e1,
         (Some(&(p, _)), Some(&(_, q))) => {
-            let mut m = merge_extent(e1.tail().to_vec(), e2.tail().to_vec());
+            let mut m = merge_extent(e1[1..].to_vec(), e2[1..].to_vec());
             m.insert(0, (p, q));
             m
         }

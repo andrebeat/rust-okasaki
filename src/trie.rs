@@ -16,8 +16,19 @@ fn longest_common_prefix(s1: &str, s2: &str) -> usize {
     s1.chars().zip(s2.chars()).take_while(|t| t.0 == t.1).count()
 }
 
+fn first_char_unwrap(s: &String) -> char {
+    s.chars().nth(0).unwrap()
+}
+
 // taken from: http://stackoverflow.com/questions/28392008/more-concise-hashmap-initialization
 macro_rules! hashmap {
+    ($( $key: expr => $val: expr ),*) => {{
+         let map = ::std::collections::HashMap::new();
+         $( map.insert($key, $val); )*
+         map
+    }}
+}
+macro_rules! hashmap_mut {
     ($( $key: expr => $val: expr ),*) => {{
          let mut map = ::std::collections::HashMap::new();
          $( map.insert($key, $val); )*
@@ -35,7 +46,7 @@ impl<T: Clone> Map<String, T> for PatriciaTrie<T> {
             match *t {
                 Tip => panic!("undefined"),
                 Node { ref key, ref value, ref children } =>
-                    match children.get(&k.char_at(0)) {
+                    match children.get(&first_char_unwrap(&k)) {
                         Some(n) => n.bind(k, v),
                         None => Node { key: k, value: Some(v), children: hashmap![] }
                     }
@@ -53,30 +64,30 @@ impl<T: Clone> Map<String, T> for PatriciaTrie<T> {
                 }
                 // the existing key is contained in the new key
                 else if i == key.len() {
-                    let k1 = &k[i..];
+                    let k1 = k[i..].to_string();
 
                     let mut children = children.clone();
-                    children.insert(k1.char_at(0), Rc::new(add_children(self, k1.to_string(), v)));
+                    children.insert(first_char_unwrap(&k1), Rc::new(add_children(self, k1, v)));
 
                     Node { key: key.clone(), value: value.clone(), children: children }
                 }
                 // the new key is contained in the existing key
                 else if i == k.len() {
-                    let k1 = &key[i..];
-                    let children = hashmap![
-                        k1.char_at(0) => Rc::new(Node { key: k1.to_string(), value: value.clone(), children: children.clone() })];
+                    let k1 = key[i..].to_string();
+                    let children = hashmap_mut![
+                        first_char_unwrap(&k1) => Rc::new(Node { key: k1, value: value.clone(), children: children.clone() })];
                     Node { key: k, value: Some(v), children: children }
                 }
                 // split at longest common prefix
                 else {
                     let common = &k[..i];
 
-                    let k1 = &key[i..];
-                    let k2 = &k[i..];
+                    let k1 = key[i..].to_string();
+                    let k2 = k[i..].to_string();
 
-                    let children = hashmap![
-                        k1.char_at(0) => Rc::new(Node { key: k1.to_string(), value: value.clone(), children: children.clone() }),
-                        k2.char_at(0) => Rc::new(Node { key: k2.to_string(), value: Some(v), children: hashmap![] })];
+                    let children = hashmap_mut![
+                        first_char_unwrap(&k1) => Rc::new(Node { key: k1, value: value.clone(), children: children.clone() }),
+                        first_char_unwrap(&k2) => Rc::new(Node { key: k2, value: Some(v), children: hashmap![] })];
 
                     Node { key: common.to_string(), value: None, children: children }
                 }
@@ -94,7 +105,7 @@ impl<T: Clone> Map<String, T> for PatriciaTrie<T> {
                         None => panic!("element does not exist"),
                     }
                 } else if k.starts_with(key) {
-                    match children.get(&k.char_at(key.len())) {
+                    match children.get(&k.chars().last().unwrap()) {
                         Some(t) => t.lookup(k[key.len()..].to_string()),
                         None => panic!("element does not exist"),
                     }
