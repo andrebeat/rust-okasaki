@@ -117,6 +117,14 @@ impl<T: Display> Display for LeftistHeap<T> {
 
 macro_rules! vecdeque {
     ($( $v: expr ),*) => {{
+         let vec = ::std::collections::VecDeque::new();
+         $( vec.push_back($v); )*
+         vec
+    }}
+}
+
+macro_rules! vecdeque_mut {
+    ($( $v: expr ),*) => {{
          let mut vec = ::std::collections::VecDeque::new();
          $( vec.push_back($v); )*
          vec
@@ -165,7 +173,7 @@ fn insert_tree<T: Clone + Ord>(h: &BinomialHeap<T>, t: &BinomialTree<T>) -> Bino
                 insert_tree(&h2.split_off(1), &link(t, t2))
             }
         },
-        _ => vecdeque![Rc::new(t.clone())],
+        _ => vecdeque_mut![Rc::new(t.clone())],
     }
 }
 
@@ -181,7 +189,7 @@ fn remove_min_tree<T: Clone + Ord>(h: &BinomialHeap<T>) -> (BinomialTree<T>, Bin
 
             let (t1, mut ts1) = remove_min_tree(&ts);
 
-            if (root(t) < root(&t1)) {
+            if root(t) < root(&t1) {
                 ((**t).clone(), ts)
             } else {
                 ts1.push_front(t.clone());
