@@ -99,15 +99,18 @@ impl<T: Clone> Map<String, T> for PatriciaTrie<T> {
         match *self {
             Tip => panic!("lookup on empty tree."),
             Node { ref key, ref value, ref children } => {
-                if k == *key {
-                    match *value {
-                        Some(ref v) => v.clone(),
-                        None => panic!("element does not exist"),
-                    }
-                } else if k.starts_with(key) {
-                    match children.get(&k.chars().last().unwrap()) {
-                        Some(t) => t.lookup(k[key.len()..].to_string()),
-                        None => panic!("element does not exist"),
+                if k.starts_with(key) {
+                    let k2 = k[key.len()..].to_string();
+                    if k2 == "" {
+                        match *value {
+                            Some(ref v) => v.clone(),
+                            None => panic!("element does not exist"),
+                        }
+                    } else {
+                        match children.get(&first_char_unwrap(&k2)) {
+                            Some(t) => t.lookup(k2),
+                            None => panic!("element does not exist"),
+                        }
                     }
                 } else {
                     panic!("element does not exist")
@@ -167,6 +170,7 @@ fn patricia_trie() {
         .bind("toast".to_string(), 6)
         .bind("toad".to_string(), 7);
 
+    println!("{}", t2);
     assert_eq!(t2.lookup("test".to_string()), 0);
     assert_eq!(t2.lookup("slow".to_string()), 1);
     assert_eq!(t2.lookup("water".to_string()), 2);
